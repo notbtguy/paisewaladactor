@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinical Case Library — Real cases. Clearer clinical thinking.</title>
+<meta name="description" content="A curated library of anonymized clinical cases for doctors, residents, and medical students to learn real-world clinical reasoning beyond the syllabus.">
+<meta name="theme-color" content="#16305c">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Clinical Case Library — Real cases. Clearer clinical thinking.">
+<meta property="og:description" content="Explore curated, anonymized clinical cases designed to help doctors and medical students learn beyond the syllabus.">
+
+<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<div class="progress-bar" id="reading-progress" hidden><div class="progress-bar-fill" id="reading-progress-fill"></div></div>
+
+<header class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <a href="?" class="brand">Clinical Case Library</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="?" data-target="home">Cases</a>
+      <a href="?view=specialties" data-target="specialties">Specialties</a>
+      <a href="?view=topics" data-target="topics">Topics</a>
+      <a href="?view=about" data-target="about">About</a>
+    </nav>
+    <div class="navbar-actions">
+      <div class="nav-search">
+        <input type="search" id="nav-search-input" placeholder="Search cases..." aria-label="Search cases">
+      </div>
+      <button type="button" class="icon-btn" id="saved-btn" aria-label="Saved cases" title="Saved cases">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>
+        <span class="badge" id="saved-count" hidden>0</span>
+      </button>
+      <button type="button" class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+      <button type="button" class="icon-btn nav-menu-btn" id="nav-menu-btn" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="nav-links-mobile" id="nav-links-mobile" aria-label="Primary mobile">
+    <a href="?" data-target="home">Cases</a>
+    <a href="?view=specialties" data-target="specialties">Specialties</a>
+    <a href="?view=topics" data-target="topics">Topics</a>
+    <a href="?view=saved" data-target="saved">Saved Cases</a>
+    <a href="?view=about" data-target="about">About</a>
+  </nav>
+</header>
+
+<main id="main-content"></main>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <div>
+      <div class="footer-brand">Clinical Case Library</div>
+      <div class="footer-tag">Real cases. Clearer clinical thinking.</div>
+      <div class="footer-meta">Made by Sanidhya · <a href="mailto:iamsanidhya.720@gmail.com">iamsanidhya.720@gmail.com</a> · <a href="https://www.instagram.com/notbtguy" target="_blank" rel="noopener">Instagram</a></div>
+      <div class="footer-meta">Educational use only · <span id="footer-year"></span></div>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="?">Cases</a>
+      <a href="?view=specialties">Specialties</a>
+      <a href="?view=topics">Topics</a>
+      <a href="?view=saved">Saved</a>
+      <a href="?view=about">About</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- Fullscreen image viewer -->
+<div class="image-viewer" id="image-viewer" hidden role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button class="image-viewer-close" id="image-viewer-close" aria-label="Close image viewer" type="button">✕</button>
+  <img id="image-viewer-img" src="" alt="">
+</div>
+
+<!-- Share menu -->
+<div class="popover" id="share-menu" hidden role="menu" aria-label="Share options"></div>
+
+<!-- Keyboard shortcuts help -->
+<div class="modal-backdrop" id="shortcuts-modal" hidden role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+  <div class="modal">
+    <h2>Keyboard shortcuts</h2>
+    <dl>
+      <dt>/</dt><dd>Focus search</dd>
+      <dt>Esc</dt><dd>Close modal / viewer / focus mode</dd>
+      <dt>B</dt><dd>Bookmark the open case</dd>
+      <dt>R</dt><dd>Toggle focus / reading mode</dd>
+      <dt>?</dt><dd>Show this help</dd>
+    </dl>
+    <button class="btn" id="shortcuts-close" type="button">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+<script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
+<script src="casepaper.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

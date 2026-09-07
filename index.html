@@ -1,104 +1,769 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clinical Case Library — Real cases. Clearer clinical thinking.</title>
-<meta name="description" content="A curated library of anonymized clinical cases for doctors, residents, and medical students to learn real-world clinical reasoning beyond the syllabus.">
-<meta name="theme-color" content="#16305c">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Salary Calculator | Doctor Edition</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter (Base), Space Mono (Terminal), Permanent Marker (Graffiti) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Permanent+Marker&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="Clinical Case Library — Real cases. Clearer clinical thinking.">
-<meta property="og:description" content="Explore curated, anonymized clinical cases designed to help doctors and medical students learn beyond the syllabus.">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                        graffiti: ['Permanent Marker', 'cursive'],
+                    },
+                    colors: {
+                        neonRed: '#ff2a2a',
+                        neonPurple: '#b829ff',
+                        neonYellow: '#ffea00',
+                        glassBg: 'rgba(20, 20, 25, 0.6)',
+                        glassBorder: 'rgba(255, 255, 255, 0.1)',
+                    },
+                    boxShadow: {
+                        'neon-purple': '0 0 20px rgba(184, 41, 255, 0.5)',
+                        'neon-red': '0 0 20px rgba(255, 42, 42, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
 
-<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Ambient Radial Orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .orb-purple { top: -10%; left: -10%; width: 50vw; height: 50vw; background: rgba(184, 41, 255, 0.3); }
+        .orb-red { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: rgba(255, 42, 42, 0.2); animation-delay: -5s; }
+        .orb-yellow { top: 40%; left: 30%; width: 40vw; height: 40vw; background: rgba(255, 234, 0, 0.1); animation-duration: 15s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        .glass-panel {
+            background: var(--glassBg, rgba(20, 20, 25, 0.6));
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .bento-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+        }
+
+        .bento-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        button.bento-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: rgba(184, 41, 255, 0.5);
+        }
+
+        .graffiti-text {
+            font-family: 'Permanent Marker', cursive;
+            transform: rotate(-3deg);
+            background: -webkit-linear-gradient(#ffea00, #ff2a2a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        #camera-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #b829ff;
+            box-shadow: 0 0 30px rgba(184, 41, 255, 0.4);
+        }
+
+        #video-feed, #captured-image-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        /* Terminal Window */
+        .terminal-window {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        
+        .terminal-header {
+            background: #1a1a1a;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .terminal-body {
+            padding: 20px;
+            font-family: 'Space Mono', monospace;
+            color: #27c93f;
+            font-size: 0.9rem;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+        }
+
+        .typing-cursor::after {
+            content: '█';
+            animation: blink 1s step-start infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Hidden Sections */
+        .section {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .section.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 1;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        /* Glitch Effect on Salary */
+        .glitch {
+            position: relative;
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #fff;
+            text-shadow: 2px 2px 0px #b829ff, -2px -2px 0px #ff2a2a;
+            word-break: break-word;
+            padding: 0 10px;
+        }
+
+        @media (min-width: 640px) {
+            .glitch {
+                font-size: 3rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .glitch {
+                font-size: 3.5rem;
+                line-height: 1.1;
+            }
+        }
+    </style>
 </head>
 <body>
-<a class="skip-link" href="#main-content">Skip to content</a>
 
-<div class="progress-bar" id="reading-progress" hidden><div class="progress-bar-fill" id="reading-progress-fill"></div></div>
+    <div id="intro-poster" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg transition-opacity duration-700">
+        <div class="glass-panel w-full max-w-2xl relative p-6 sm:p-10 md:p-20 text-center border-neonPurple/50 shadow-neon-purple transform transition-transform duration-500" id="poster-panel">
+            
+            <!-- Close Signal Top Right -->
+            <button id="close-poster-btn" class="absolute top-4 right-4 md:top-5 md:right-5 text-gray-400 hover:text-neonRed transition-colors focus:outline-none group">
+                <i data-lucide="x-square" class="w-6 h-6 md:w-8 md:h-8 group-hover:scale-110 transition-transform"></i>
+            </button>
 
-<header class="navbar" id="navbar">
-  <div class="navbar-inner">
-    <a href="?" class="brand">Clinical Case Library</a>
-    <nav class="nav-links" aria-label="Primary">
-      <a href="?" data-target="home">Cases</a>
-      <a href="?view=specialties" data-target="specialties">Specialties</a>
-      <a href="?view=topics" data-target="topics">Topics</a>
-      <a href="?view=about" data-target="about">About</a>
-    </nav>
-    <div class="navbar-actions">
-      <div class="nav-search">
-        <input type="search" id="nav-search-input" placeholder="Search cases..." aria-label="Search cases">
-      </div>
-      <button type="button" class="icon-btn" id="saved-btn" aria-label="Saved cases" title="Saved cases">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>
-        <span class="badge" id="saved-count" hidden>0</span>
-      </button>
-      <button type="button" class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"></button>
-      <button type="button" class="icon-btn nav-menu-btn" id="nav-menu-btn" aria-label="Menu" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-      </button>
+            <!-- Poster Decor -->
+            <div class="absolute -top-4 -left-4 md:-top-6 md:-left-6 opacity-30 pointer-events-none">
+                <span class="graffiti-text text-3xl md:text-5xl">MEME ONLY!</span>
+            </div>
+
+            <i data-lucide="activity" class="w-12 h-12 md:w-16 md:h-16 text-neonRed mx-auto mb-4 md:mb-6 drop-shadow-[0_0_15px_rgba(255,42,42,0.8)]"></i>
+            
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tighter leading-tight mb-4 uppercase">
+                Doctor<br/>Salary<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-neonRed via-neonPurple to-neonYellow">Calculator</span>
+            </h1>
+            
+            <p class="text-gray-300 font-mono mt-4 md:mt-6 text-xs sm:text-sm md:text-base border-t border-white/10 pt-4 md:pt-6">
+                > SYSTEM.INITIATE_VIBE_CHECK <br/>
+                > WARNING: RESULTS MAY CAUSE EMOTIONAL DAMAGE
+            </p>
+
+            <div class="mt-6 md:mt-8">
+                <span class="animate-pulse text-neonYellow text-xs sm:text-sm font-bold tracking-widest cursor-pointer p-2" onclick="document.getElementById('close-poster-btn').click()">CLOSE TO BEGIN [X]</span>
+            </div>
+        </div>
     </div>
-  </div>
-  <nav class="nav-links-mobile" id="nav-links-mobile" aria-label="Primary mobile">
-    <a href="?" data-target="home">Cases</a>
-    <a href="?view=specialties" data-target="specialties">Specialties</a>
-    <a href="?view=topics" data-target="topics">Topics</a>
-    <a href="?view=saved" data-target="saved">Saved Cases</a>
-    <a href="?view=about" data-target="about">About</a>
-  </nav>
-</header>
 
-<main id="main-content"></main>
+    <!-- Ambient Background -->
+    <div class="orb orb-purple"></div>
+    <div class="orb orb-red"></div>
+    <div class="orb orb-yellow"></div>
 
-<footer class="site-footer">
-  <div class="site-footer-inner">
-    <div>
-      <div class="footer-brand">Clinical Case Library</div>
-      <div class="footer-tag">Real cases. Clearer clinical thinking.</div>
-      <div class="footer-meta">Made by Sanidhya · <a href="mailto:iamsanidhya.720@gmail.com">iamsanidhya.720@gmail.com</a> · <a href="https://www.instagram.com/notbtguy" target="_blank" rel="noopener">Instagram</a></div>
-      <div class="footer-meta">Educational use only · <span id="footer-year"></span></div>
-    </div>
-    <nav class="footer-links" aria-label="Footer">
-      <a href="?">Cases</a>
-      <a href="?view=specialties">Specialties</a>
-      <a href="?view=topics">Topics</a>
-      <a href="?view=saved">Saved</a>
-      <a href="?view=about">About</a>
-    </nav>
-  </div>
-</footer>
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 w-full relative z-10">
+        <div class="glass-panel w-full max-w-lg p-5 sm:p-8 md:p-10 relative overflow-hidden text-center">
+            
+            <!-- Graffiti Overlay Decor -->
+            <div class="absolute -top-2 -right-4 md:-top-4 md:-right-6 opacity-30 pointer-events-none">
+                <span class="graffiti-text text-2xl md:text-4xl">QUACK!</span>
+            </div>
 
-<!-- Fullscreen image viewer -->
-<div class="image-viewer" id="image-viewer" hidden role="dialog" aria-modal="true" aria-label="Image viewer">
-  <button class="image-viewer-close" id="image-viewer-close" aria-label="Close image viewer" type="button">✕</button>
-  <img id="image-viewer-img" src="" alt="">
-</div>
+            <!-- ========================================== -->
+            <!-- SECTION 1: CAMERA                          -->
+            <!-- ========================================== -->
+            <div id="section-camera" class="section active">
+                <div class="flex items-center justify-center gap-2 md:gap-3 mb-2">
+                    <i data-lucide="stethoscope" class="text-neonPurple w-6 h-6 md:w-8 md:h-8"></i>
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">Doc<span class="text-transparent bg-clip-text bg-gradient-to-r from-neonRed to-neonYellow">Valuator</span></h1>
+                </div>
+                <p class="text-gray-400 text-xs sm:text-sm mb-6 max-w-xs mx-auto">Let our illegal AI scan your face to determine your true medical market value.</p>
+                
+                <div class="w-40 sm:w-48 md:w-64 mx-auto mb-6">
+                    <div id="camera-wrapper">
+                        <video id="video-feed" autoplay playsinline muted></video>
+                        <canvas id="captured-image-canvas" style="display:none;"></canvas>
+                        <!-- Scanner line overlay -->
+                        <div id="scanner" class="absolute top-0 left-0 w-full h-1 bg-neonPurple shadow-[0_0_15px_#b829ff] hidden" style="animation: scan 1.5s linear infinite;"></div>
+                    </div>
+                </div>
 
-<!-- Share menu -->
-<div class="popover" id="share-menu" hidden role="menu" aria-label="Share options"></div>
+                <div id="camera-status" class="flex items-center gap-2 text-neonYellow text-sm mb-6">
+                    <i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Hacking into your front camera...
+                </div>
 
-<!-- Keyboard shortcuts help -->
-<div class="modal-backdrop" id="shortcuts-modal" hidden role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
-  <div class="modal">
-    <h2>Keyboard shortcuts</h2>
-    <dl>
-      <dt>/</dt><dd>Focus search</dd>
-      <dt>Esc</dt><dd>Close modal / viewer / focus mode</dd>
-      <dt>B</dt><dd>Bookmark the open case</dd>
-      <dt>R</dt><dd>Toggle focus / reading mode</dd>
-      <dt>?</dt><dd>Show this help</dd>
-    </dl>
-    <button class="btn" id="shortcuts-close" type="button">Close</button>
-  </div>
-</div>
+                <button id="capture-btn" class="hidden w-full group relative px-8 py-4 font-bold text-white rounded-full bg-gradient-to-r from-neonPurple to-neonRed hover:scale-105 transition-all shadow-neon-purple overflow-hidden">
+                    <div class="absolute inset-0 w-full h-full bg-white/20 group-hover:translate-x-full -translate-x-full skew-x-12 transition-transform duration-500 ease-out"></div>
+                    <span class="relative flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <i data-lucide="scan-face" class="w-5 h-5"></i> Analyze My Worth
+                    </span>
+                </button>
+            </div>
 
-<div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+            <!-- ========================================== -->
+            <!-- SECTION 2: BENTO GRID QUESTIONNAIRE        -->
+            <!-- ========================================== -->
+            <div id="section-questions" class="section w-full">
+                <!-- Progress Indicator -->
+                <div class="flex justify-between items-center w-full mb-4 md:mb-6 text-xs font-mono text-gray-400">
+                    <span>SYS.QUERY</span>
+                    <span id="question-counter" class="text-neonYellow">1 / 5</span>
+                </div>
+                
+                <h2 id="question-text" class="text-lg sm:text-xl md:text-2xl font-bold mb-6 md:mb-8 text-left leading-tight">Loading...</h2>
+                
+                <div id="options-container" class="bento-grid">
+                    <!-- Options injected here -->
+                </div>
+            </div>
 
-<script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
-<script src="casepaper.js"></script>
-<script src="app.js"></script>
+            <!-- ========================================== -->
+            <!-- SECTION 3: TERMINAL CALCULATION            -->
+            <!-- ========================================== -->
+            <div id="section-terminal" class="section w-full">
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <div class="terminal-dot dot-red"></div>
+                        <div class="terminal-dot dot-yellow"></div>
+                        <div class="terminal-dot dot-green"></div>
+                        <span class="text-[10px] sm:text-xs text-gray-400 ml-2 font-mono">root@doc-valuator:~</span>
+                    </div>
+                    <div class="terminal-body text-xs sm:text-sm" id="terminal-output">
+                        <!-- Typewriter lines injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- SECTION 4: ABSURD RESULT                   -->
+            <!-- ========================================== -->
+            <div id="section-result" class="section w-full relative">
+                <span class="graffiti-text text-xl md:text-2xl absolute -top-8 md:-top-10 left-0 rotate-12 z-20">CERTIFIED!</span>
+                
+                <h3 class="text-gray-400 uppercase tracking-widest text-[10px] sm:text-xs font-bold mb-2">Estimated Salary</h3>
+                
+                <div class="my-4 md:my-6 py-4 md:py-6 border-y border-white/10 w-full relative">
+                    <div id="final-salary-value" class="glitch">
+                        $0
+                    </div>
+                </div>
+                
+                <p id="result-reason" class="text-gray-300 font-mono text-xs sm:text-sm mb-6 md:mb-8 italic px-2">
+                    Analyzing vibes...
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                    <button id="share-btn" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold bg-white text-black hover:bg-gray-200 transition-colors text-sm sm:text-base">
+                        <i data-lucide="instagram" class="w-4 h-4 sm:w-5 sm:h-5"></i> Flex on IG
+                    </button>
+                    <button id="retry-btn" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold border border-white/20 text-white hover:bg-white/5 transition-colors text-sm sm:text-base">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Recount
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="w-full p-4 relative z-10 bg-black/40 backdrop-blur-md border-t border-white/10 mt-auto">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between text-sm text-gray-400 gap-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="zap" class="w-4 h-4 text-neonYellow"></i>
+                <span class="font-bold">Made by Sannidhya</span>
+            </div>
+            <div class="flex items-center gap-6 font-mono text-xs">
+                <a href="mailto:iamsanidhya.720@gmail.com" class="hover:text-neonPurple transition-colors flex items-center gap-1">
+                    <i data-lucide="mail" class="w-4 h-4"></i> iamsanidhya.720@gmail.com
+                </a>
+                <a href="https://www.instagram.com/notbtguy" target="_blank" class="hover:text-neonRed transition-colors flex items-center gap-1">
+                    <i data-lucide="at-sign" class="w-4 h-4"></i> @notbtguy
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        @keyframes scan {
+            0% { top: 0; opacity: 1; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+    </style>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Data arrays required by prompt: 50 Questions & 50 Outcomes
+        const ALL_QUESTIONS = [
+            { q: "A patient WebMDs their symptoms. You...", opts: ["Nod and zone out", "Prescribe grass touching", "Fight them", "Cry in the supply closet"] },
+            { q: "Your defense against 'an apple a day':", opts: ["Hazmat suit", "A bigger apple", "Crying", "Throwing a scalpel"] },
+            { q: "Choose your weapon for surgery:", opts: ["Rusty spoon", "Plastic spork", "Laser eyes", "Standard scalpel (boring)"] },
+            { q: "A 5-year-old asks where babies come from.", opts: ["The pharmacy", "Amazon Prime", "Mitosis", "I run away"] },
+            { q: "What's in your secret doctor flask?", opts: ["Tears of interns", "Pure espresso", "Hand sanitizer", "Apple juice"] },
+            { q: "Patient says 'I have high pain tolerance'.", opts: ["Bet.", "Pass out instantly", "Okay, Rambo", "Administer tickles"] },
+            { q: "Best way to cure a headache?", opts: ["Decapitation", "Leeches", "Drink water maybe?", "Percussive maintenance"] },
+            { q: "Your handwriting looks like:", opts: ["Ancient hieroglyphs", "A seismograph in an earthquake", "Comic Sans", "Actually legible (Liar)"] },
+            { q: "How do you break bad news?", opts: ["Interpretive dance", "Via TikTok trend", "Smoke signals", "Slide a note under the door"] },
+            { q: "Favorite organ?", opts: ["The spleen (underdog)", "Appendix (useless, like me)", "Skin (it holds the meat in)", "Heart (cliché)"] },
+            { q: "A patient brings a crystal for healing.", opts: ["Eat it.", "Charge them double", "Smash it with a hammer", "Say 'Ooo shiny'"] },
+            { q: "Surgeon puts on Spotify. The playlist is:", opts: ["Screamo", "Whale noises", "Cocomelon", "Silence."] },
+            { q: "What cures the common cold?", opts: ["Vick's VapoRub on the feet", "Yelling at it", "Denial", "Capitalism"] },
+            { q: "Your sleep schedule is:", opts: ["Vampiric", "Non-existent", "8 hours (I'm lying)", "Micro-naps during blinks"] },
+            { q: "If you weren't a doctor, you'd be:", opts: ["A failed DJ", "Professional sleeper", "Cult leader", "Unemployed"] },
+            { q: "How many coffees today?", opts: ["Yes.", "My blood is brown", "Just one (gallon)", "I absorb caffeine via osmosis"] },
+            { q: "Patient refuses a vaccine. You:", opts: ["Blow a dart", "Sigh deeply", "Offer them a lollipop", "Call their mom"] },
+            { q: "Best hospital cafeteria food?", opts: ["The ice", "Mystery meat", "Tears", "Stale crackers"] },
+            { q: "How to fix a broken bone?", opts: ["Duct tape", "Glue", "Thoughts and prayers", "Blow on it"] },
+            { q: "What's your medical superpower?", opts: ["Ignoring pagers", "Speed-walking", "Diagnosing via vibes", "Sleeping standing up"] },
+            { q: "A ghost haunts your clinic.", opts: ["Charge it copay", "Exorcism", "Befriend it", "Cry"] },
+            { q: "Favorite medical TV show?", opts: ["Grey's Anatomy (for the drama)", "House (for the sarcasm)", "Scrubs (documentary)", "Doc McStuffins"] },
+            { q: "Patient has 3 days to live.", opts: ["'Skill issue'", "'F'", "Play sad violin", "Actually do my job"] },
+            { q: "How to deal with anti-vaxxers?", opts: ["Scream into a pillow", "Blink slowly", "Walk away", "Join them"] },
+            { q: "Best excuse for being late?", opts: ["'Traffic'", "'My dog ate my stethoscope'", "'I was saving a life'", "'I just didn't want to come'"] },
+            { q: "What's in your pocket right now?", opts: ["Lint", "Stolen pens", "A severed finger (fake)", "Hopes and dreams"] },
+            { q: "How to cure sadness?", opts: ["Puppies", "Chocolate", "Money", "More sadness"] },
+            { q: "Patient is allergic to water.", opts: ["'Good luck'", "Prescribe dust", "Wrap them in plastic", "Give them soda"] },
+            { q: "Your spirit animal is:", opts: ["Sloth", "Rabid raccoon", "Tired owl", "A rock"] },
+            { q: "How to perform CPR?", opts: ["To the beat of 'Stayin' Alive'", "To the beat of 'Another One Bites the Dust'", "Punch the chest", "Yell 'WAKE UP'"] },
+            { q: "Patient swallowed a coin.", opts: ["Make them a piggy bank", "Wait.", "Surgery time!", "Magnets"] },
+            { q: "Best way to remove a band-aid?", opts: ["Slow and painful", "Fast and painful", "Leave it forever", "Amputation"] },
+            { q: "What's the meaning of life?", opts: ["42", "Pizza", "Paying off student loans", "Nobody knows"] },
+            { q: "Patient thinks they have a parasite.", opts: ["'Name it'", "Give it a tiny hat", "Eviction notice", "Sigh"] },
+            { q: "How to stop a nosebleed?", opts: ["Tampon", "Tilt head back (wrong)", "Pinch it", "Let it flow"] },
+            { q: "Favorite medical tool?", opts: ["Reflex hammer (bonk)", "Stethoscope (necklace)", "Tongue depressor (snack)", "Defibrillator (zap)"] },
+            { q: "Patient asks for a discount.", opts: ["Laugh", "Offer a high-five", "Call security", "Give them a coupon"] },
+            { q: "How to handle a Karen?", opts: ["Sedate", "Agree aggressively", "Run", "Call the manager"] },
+            { q: "What's a 'normal' heart rate?", opts: ["Whatever mine is", "60-100 (nerd)", "Over 9000", "0 (if they're annoying)"] },
+            { q: "Patient is turning blue.", opts: ["'Cool color'", "Smurfs cosplay?", "Give oxygen", "Take a picture"] },
+            { q: "How to fix a paper cut?", opts: ["Scream", "Lemon juice", "Band-aid", "Amputate the finger"] },
+            { q: "Favorite hospital smell?", opts: ["Bleach", "Despair", "Coffee", "Nothing"] },
+            { q: "Patient asks for your number.", opts: ["Give fake number", "Give hospital number", "Run", "Blush"] },
+            { q: "How to stay awake on a night shift?", opts: ["Energy drinks", "Fear", "Pinching yourself", "You don't"] },
+            { q: "What's a placebo?", opts: ["A fun word", "Sugar pill", "Magic", "Lies"] },
+            { q: "Patient wants a second opinion.", opts: ["'I am the only opinion'", "Change your voice", "Ask the janitor", "Fine."] },
+            { q: "How to cure a hiccup?", opts: ["Scare them", "Hold breath", "Drink water upside down", "Death"] },
+            { q: "Favorite bone to break?", opts: ["Clavicle", "Femur (go big)", "Pinky toe", "None, ouch"] },
+            { q: "Patient is faking it.", opts: ["Fake a cure", "Give them a sticker", "Expose them", "Play along"] },
+            { q: "What's your final diagnosis?", opts: ["Lumbago", "Cooties", "Skill issue", "Terminal uniqueness"] }
+        ];
+
+        const ALL_OUTCOMES = [
+            { s: "-$1,000,000", r: "You owe the hospital for existing in their airspace." },
+            { s: "3 Robux", r: "The hospital budget got slashed. Buy yourself a virtual hat." },
+            { s: "1 Half-Eaten Sandwich", r: "Found in the doctors' lounge. It's tuna." },
+            { s: "$1.00", r: "Don't spend it all in one place, hotshot." },
+            { s: "A Firm Handshake", r: "From the admin who makes 10x more than you." },
+            { s: "400 V-Bucks", r: "For cranking 90s in the OR." },
+            { s: "$1,000,000,000", r: "Wait, this is a typo. We meant 1 billion Zimbabwe dollars." },
+            { s: "A Toffee", r: "A shiny wrapped candy from a grateful grandma." },
+            { s: "Free Fire Coins", r: "To fuel your gaming addiction between patients." },
+            { s: "Infinite Breadsticks", r: "Olive Garden sponsored your residency." },
+            { s: "-$5", r: "You broke a stethoscope. Pay up." },
+            { s: "1 Bitcoin", r: "But you lost the hard drive password in 2013." },
+            { s: "Exposure", r: "The influencer patient paid you in shoutouts." },
+            { s: "A Used Band-Aid", r: "It's the thought that counts." },
+            { s: "$420.69", r: "Nice. Very professional." },
+            { s: "1 Dogecoin", r: "Much wow. Very doctor. Such medicine." },
+            { s: "A Pat on the Back", r: "HR said a monetary bonus would 'ruin the culture'." },
+            { s: "$0.01", r: "Legally, they have to pay you *something*." },
+            { s: "A Coupon for 10% off", r: "At the hospital gift shop. Excludes candy." },
+            { s: "Pizza Party!", r: "Instead of a raise, the management bought Little Caesars." },
+            { s: "1 Bottle of Hand Sanitizer", r: "Liquid gold in these trying times." },
+            { s: "A Stolen Pen", r: "You took it from the nurses' station anyway." },
+            { s: "-$40,000", r: "Malpractice suit. Better call Saul." },
+            { s: "Ownership of a Wendy's", r: "Sir, this is a hospital." },
+            { s: "1 Like", r: "On your latest medical TikTok dance." },
+            { s: "$99.99", r: "Plus shipping and handling." },
+            { s: "A High Five", r: "Don't leave me hanging, doc." },
+            { s: "1 Roll of Toilet Paper", r: "Single-ply. The cheap stuff." },
+            { s: "A Participation Trophy", r: "For showing up to your shift." },
+            { s: "$777", r: "Jackpot! Go buy a lottery ticket." },
+            { s: "1 Left Shoe", r: "The right one is missing." },
+            { s: "A Shiny Rock", r: "It has good healing energy, apparently." },
+            { s: "1 Can of Beans", r: "Dinner is served." },
+            { s: "$13.37", r: "Elite hacker doctor vibes." },
+            { s: "A Hug", r: "Ew, personal space." },
+            { s: "1 Paperclip", r: "Trade it up until you get a house." },
+            { s: "$3.50", r: "Tree fiddy." },
+            { s: "A Gold Star Sticker", r: "You were a brave boy today." },
+            { s: "1 Get Out of Jail Free Card", r: "Use it wisely." },
+            { s: "$8,008", r: "Hehe. Calculator humor." },
+            { s: "A Clue", r: "Because you clearly need one." },
+            { s: "1 Free Therapy Session", r: "You definitely need this more than money." },
+            { s: "$1,234.56", r: "Someone just mashed the keyboard." },
+            { s: "A Mystery Box", r: "Could be a boat. Could be a lawsuit." },
+            { s: "1 Pack of Gum", r: "Your breath stinks. Consider it an investment." },
+            { s: "$666", r: "The devil's copay." },
+            { s: "A Used Tissue", r: "Biohazard payload." },
+            { s: "1 Ticket to Mars", r: "Elon Musk needs a doctor up there." },
+            { s: "$9,999,999", r: "Error 404: Funds not found." },
+            { s: "Absolutely Nothing", r: "Good day, sir. I said GOOD DAY!" }
+        ];
+
+        let currentStream = null;
+        let selectedQuestions = [];
+        let currentQIndex = 0;
+        
+        const ui = {
+            camera: document.getElementById('section-camera'),
+            questions: document.getElementById('section-questions'),
+            terminal: document.getElementById('section-terminal'),
+            result: document.getElementById('section-result')
+        };
+
+        function switchSection(targetId) {
+            Object.values(ui).forEach(el => el.classList.remove('active'));
+            setTimeout(() => {
+                ui[targetId].classList.add('active');
+            }, 50); // slight delay to allow display:none to swap
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        async function initCamera() {
+            const statusEl = document.getElementById('camera-status');
+            const btn = document.getElementById('capture-btn');
+            const video = document.getElementById('video-feed');
+            
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                video.srcObject = currentStream;
+                video.onloadedmetadata = () => {
+                    statusEl.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> Face detected. Ready to violate privacy.`;
+                    statusEl.classList.remove('text-neonYellow');
+                    statusEl.classList.add('text-gray-400');
+                    lucide.createIcons();
+                    btn.classList.remove('hidden');
+                };
+            } catch (err) {
+                statusEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-neonRed"></i> Camera denied. We'll judge your soul instead.`;
+                statusEl.classList.add('text-neonRed');
+                lucide.createIcons();
+                btn.innerHTML = `<span class="relative flex items-center justify-center gap-2">Proceed Without Camera</span>`;
+                btn.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('capture-btn').addEventListener('click', () => {
+            const btn = document.getElementById('capture-btn');
+            const scanner = document.getElementById('scanner');
+            const video = document.getElementById('video-feed');
+            const canvas = document.getElementById('captured-image-canvas');
+            
+            btn.innerHTML = `<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> Extracting Bio-Data...`;
+            lucide.createIcons();
+            scanner.classList.remove('hidden');
+            
+            setTimeout(() => {
+                if (currentStream) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    video.style.display = 'none';
+                    canvas.style.display = 'block';
+                    currentStream.getTracks().forEach(t => t.stop());
+                }
+                scanner.classList.add('hidden');
+                
+                setTimeout(() => {
+                    startQuestions();
+                }, 600);
+            }, 1500);
+        });
+
+        function startQuestions() {
+            // Pick 5 random questions
+            selectedQuestions = shuffle([...ALL_QUESTIONS]).slice(0, 5);
+            currentQIndex = 0;
+            switchSection('questions');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const qObj = selectedQuestions[currentQIndex];
+            document.getElementById('question-counter').innerText = `${currentQIndex + 1} / 5`;
+            document.getElementById('question-text').innerText = qObj.q;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            // Shuffle options so they aren't always in same order
+            const shuffledOpts = shuffle([...qObj.opts]);
+            
+            shuffledOpts.forEach(optText => {
+                const btn = document.createElement('button');
+                btn.className = 'bento-item text-left font-semibold text-gray-200 text-xs sm:text-sm md:text-base flex items-center justify-start min-h-[70px] md:min-h-[80px] p-4 w-full break-words leading-snug';
+                btn.innerText = optText;
+                btn.onclick = () => {
+                    btn.classList.add('bg-white/20', 'border-neonPurple');
+                    setTimeout(() => handleAnswer(), 200);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer() {
+            currentQIndex++;
+            if (currentQIndex < 5) {
+                renderQuestion();
+            } else {
+                startTerminalPhase();
+            }
+        }
+
+        function startTerminalPhase() {
+            switchSection('terminal');
+            const terminalBody = document.getElementById('terminal-output');
+            terminalBody.innerHTML = '<span class="typing-cursor"></span>';
+            
+            const lines = [
+                "[+] Initiating Deep-Scan Protocols...",
+                "[+] Cross-referencing WebMD search history...",
+                "WARN: Excessive caffeine levels detected in bloodstream.",
+                "[+] Judging handwriting legibility... (Failed)",
+                "[+] Calculating Hippocratic Oath adherence percentage...",
+                "ERR: Vibes are completely off.",
+                "[+] Finalizing market value estimation..."
+            ];
+            
+            let lineIdx = 0;
+            
+            function typeLine() {
+                if (lineIdx >= lines.length) {
+                    setTimeout(showResult, 800);
+                    return;
+                }
+                
+                const p = document.createElement('div');
+                terminalBody.insertBefore(p, terminalBody.querySelector('.typing-cursor'));
+                
+                let charIdx = 0;
+                const text = lines[lineIdx];
+                
+                const typeChar = setInterval(() => {
+                    p.innerText += text[charIdx];
+                    charIdx++;
+                    if (charIdx >= text.length) {
+                        clearInterval(typeChar);
+                        lineIdx++;
+                        setTimeout(typeLine, Math.random() * 300 + 200); // Random delay between lines
+                    }
+                }, 30); // Fast typing speed
+            }
+            
+            setTimeout(typeLine, 500);
+        }
+
+        function showResult() {
+            // Pick random outcome
+            const outcome = ALL_OUTCOMES[Math.floor(Math.random() * ALL_OUTCOMES.length)];
+            
+            document.getElementById('final-salary-value').innerText = outcome.s;
+            document.getElementById('result-reason').innerText = outcome.r;
+            
+            switchSection('result');
+            
+            // Fire Confetti
+            setTimeout(() => {
+                const duration = 3000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#ff2a2a', '#b829ff', '#ffea00']
+                    });
+                    confetti({
+                        particleCount: 5,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#ff2a2a', '#b829ff', '#ffea00']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+            }, 300);
+        }
+
+        document.getElementById('share-btn').addEventListener('click', function() {
+            const val = document.getElementById('final-salary-value').innerText;
+            const text = `My AI estimated Doctor Salary is: ${val}. Determine your worth at DocValuator!`;
+            
+            const originalHTML = this.innerHTML;
+            this.innerHTML = `<i data-lucide="check" class="w-5 h-5"></i> Copied to Clipboard!`;
+            this.classList.replace('bg-white', 'bg-green-400');
+            lucide.createIcons();
+            
+            navigator.clipboard.writeText(text).catch(err => {
+                // fallback
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+            
+            setTimeout(() => {
+                this.innerHTML = originalHTML;
+                this.classList.replace('bg-green-400', 'bg-white');
+                lucide.createIcons();
+            }, 2000);
+        });
+
+        document.getElementById('retry-btn').addEventListener('click', () => {
+            // Reset UI
+            document.getElementById('video-feed').style.display = 'block';
+            document.getElementById('captured-image-canvas').style.display = 'none';
+            
+            const btn = document.getElementById('capture-btn');
+            btn.innerHTML = `<div class="absolute inset-0 w-full h-full bg-white/20 group-hover:translate-x-full -translate-x-full skew-x-12 transition-transform duration-500 ease-out"></div><span class="relative flex items-center justify-center gap-2"><i data-lucide="scan-face" class="w-5 h-5"></i> Analyze My Worth</span>`;
+            
+            initCamera(); // Restart camera
+            switchSection('camera');
+        });
+
+        document.getElementById('close-poster-btn').addEventListener('click', () => {
+            const poster = document.getElementById('intro-poster');
+            const panel = document.getElementById('poster-panel');
+            
+            poster.style.opacity = '0';
+            panel.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                poster.style.display = 'none';
+                initCamera(); // Delay camera initialization until poster is closed
+            }, 700);
+        });
+
+        // Start
+        window.onload = () => {
+            // Lucide icons are initialized globally at the top of the script
+            // Wait for user to dismiss the poster before starting camera
+        };
+    </script>
 </body>
 </html>
